@@ -1,0 +1,22 @@
+<div class="brick-cell brick-@Color.ToString().ToLower() @(IsHighlighted ? "highlighted" : "")"
+     @onmouseenter="OnMouseEnter"
+     @onclick="OnClick">
+</div>
+
+@code {
+    [Parameter] public Brick Brick { get; set; } = default!;
+    [Parameter] public BrickColor Color { get; set; }
+    [Parameter] public bool IsHighlighted { get; set; }
+    [Parameter] public EventCallback<Brick> OnBrickHover { get; set; }
+    [Parameter] public EventCallback<Brick> OnBrickClick { get; set; }
+
+    private async Task OnMouseEnter()
+    {
+        await OnBrickHover.InvokeAsync(Brick);
+    }
+
+    private async Task OnClick()
+    {
+        await OnBrickClick.InvokeAsync(Brick);
+    }
+}

@@ -1,0 +1,9 @@
+<div class="score-bar">
+    <span class="score-label">Points: <strong>@PreviewPoints</strong></span>
+    <span class="score-label">Score: <strong>@Score</strong></span>
+</div>
+
+@code {
+    [Parameter] public int PreviewPoints { get; set; }
+    [Parameter] public int Score { get; set; }
+}

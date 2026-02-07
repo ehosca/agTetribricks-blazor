@@ -1,0 +1,51 @@
+<div class="game-board" @onmouseleave="ClearHighlight">
+    @foreach (var column in Game.Columns)
+    {
+        <div class="brick-column">
+            @foreach (var brick in column.Bricks)
+            {
+                <BrickCell Brick="brick"
+                           Color="brick.Color"
+                           IsHighlighted="_highlightedBricks.Contains(brick)"
+                           OnBrickHover="HandleBrickHover"
+                           OnBrickClick="HandleBrickClick" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public TetriBricksGame Game { get; set; } = default!;
+    [Parameter] public EventCallback<Brick> OnBrickClick { get; set; }
+    [Parameter] public EventCallback<int> OnPreviewPoints { get; set; }
+
+    private HashSet<Brick> _highlightedBricks = new();
+
+    private async Task HandleBrickHover(Brick brick)
+    {
+        _highlightedBricks.Clear();
+        var adjacent = Game.GetAdjacentBricks(brick);
+        if (adjacent.Count > 1)
+        {
+            foreach (var b in adjacent)
+                _highlightedBricks.Add(b);
+            await OnPreviewPoints.InvokeAsync((int)Math.Pow(adjacent.Count, 2));
+        }
+        else
+        {
+            await OnPreviewPoints.InvokeAsync(0);
+        }
+    }
+
+    private void ClearHighlight()
+    {
+        _highlightedBricks.Clear();
+        OnPreviewPoints.InvokeAsync(0);
+    }
+
+    private async Task HandleBrickClick(Brick brick)
+    {
+        _highlightedBricks.Clear();
+        await OnBrickClick.InvokeAsync(brick);
+    }
+}

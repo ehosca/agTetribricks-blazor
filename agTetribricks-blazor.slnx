@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TetriBricks.Client/TetriBricks.Client.csproj" />
+    <Project Path="src/TetriBricks.Core/TetriBricks.Core.csproj" />
+    <Project Path="src/TetriBricks.Server/TetriBricks.Server.csproj" />
+    <Project Path="src/TetriBricks.Shared/TetriBricks.Shared.csproj" />
+  </Folder>
+</Solution>

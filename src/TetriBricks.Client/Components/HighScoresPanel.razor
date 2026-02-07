@@ -1,0 +1,52 @@
+@inject IScoreService ScoreService
+
+<div class="overlay-panel high-scores-panel">
+    <h3>High Scores</h3>
+    @if (_loading)
+    {
+        <p>Loading...</p>
+    }
+    else if (_scores.Count == 0)
+    {
+        <p>No scores yet.</p>
+    }
+    else
+    {
+        <table class="scores-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Score</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < _scores.Count; i++)
+                {
+                    var score = _scores[i];
+                    <tr>
+                        <td>@(i + 1)</td>
+                        <td>@score.UserName</td>
+                        <td>@score.ScoreValue</td>
+                        <td>@score.ScoreDate.ToString("d")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    <button class="toolbar-btn" @onclick="OnClose">Close</button>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private List<ScoreDto> _scores = new();
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _scores = await ScoreService.GetTopScoresAsync();
+        _loading = false;
+    }
+}

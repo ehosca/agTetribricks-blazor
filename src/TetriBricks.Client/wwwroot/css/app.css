@@ -1,0 +1,230 @@
+/* === Base === */
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #3a3a3a;
+    color: AliceBlue;
+    height: 100%;
+}
+
+h1:focus {
+    outline: none;
+}
+
+/* === Game Page Layout === */
+.game-page {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 20px;
+    min-height: 100vh;
+}
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.game-title {
+    font-size: 1.5rem;
+    margin: 0;
+    color: AliceBlue;
+}
+
+/* === Score Bar === */
+.score-bar {
+    display: flex;
+    gap: 24px;
+    font-size: 0.95rem;
+}
+
+.score-label {
+    color: AliceBlue;
+}
+
+/* === Toolbar === */
+.toolbar {
+    display: flex;
+    gap: 6px;
+}
+
+.toolbar-btn {
+    background-color: #555;
+    color: AliceBlue;
+    border: 1px solid #777;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.toolbar-btn:hover:not(:disabled) {
+    background-color: #666;
+}
+
+.toolbar-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* === Game Board === */
+.board-container {
+    position: relative;
+    background-color: #000;
+    padding: 2px;
+}
+
+.game-board {
+    display: flex;
+    flex-direction: row;
+}
+
+.brick-column {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+/* === Brick Cell === */
+.brick-cell {
+    width: 20px;
+    height: 20px;
+    opacity: 0.8;
+    cursor: pointer;
+    box-sizing: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.brick-cell.highlighted {
+    opacity: 1.0;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.brick-red { background-color: #e74c3c; }
+.brick-blue { background-color: #3498db; }
+.brick-green { background-color: #2ecc71; }
+.brick-yellow { background-color: #f1c40f; }
+
+/* === Overlay Panels === */
+.overlay-panel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(30, 30, 30, 0.95);
+    border: 1px solid #666;
+    padding: 16px;
+    z-index: 10;
+    min-width: 240px;
+    text-align: center;
+}
+
+/* === High Scores Table === */
+.scores-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 0.85rem;
+}
+
+.scores-table th,
+.scores-table td {
+    padding: 3px 8px;
+    text-align: left;
+    border-bottom: 1px solid #444;
+}
+
+.scores-table th {
+    color: #aaa;
+}
+
+/* === Submit Score Form === */
+.form-group {
+    margin: 8px 0;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+}
+
+.score-input {
+    width: 100%;
+    padding: 4px 6px;
+    background-color: #333;
+    color: AliceBlue;
+    border: 1px solid #666;
+    box-sizing: border-box;
+}
+
+.form-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+/* === Game Over Panel === */
+.game-over-panel {
+    padding: 20px;
+}
+
+/* === Loading / Error (from template) === */
+#blazor-error-ui {
+    color-scheme: light only;
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+    color: #333;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+.loading-progress {
+    position: absolute;
+    display: block;
+    width: 8rem;
+    height: 8rem;
+    inset: 20vh 0 auto 0;
+    margin: 0 auto 0 auto;
+}
+
+.loading-progress circle {
+    fill: none;
+    stroke: #e0e0e0;
+    stroke-width: 0.6rem;
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+}
+
+.loading-progress circle:last-child {
+    stroke: #1b6ec2;
+    stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+    transition: stroke-dasharray 0.05s ease-in-out;
+}
+
+.loading-progress-text {
+    position: absolute;
+    text-align: center;
+    font-weight: bold;
+    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+}
+
+.loading-progress-text:after {
+    content: var(--blazor-load-percentage-text, "Loading");
+}

@@ -1,0 +1,49 @@
+@inject IScoreService ScoreService
+
+<div class="overlay-panel submit-score-panel">
+    <h3>Game Over!</h3>
+    <p>Your score: <strong>@Score</strong></p>
+    <div class="form-group">
+        <label>Name:</label>
+        <input type="text" @bind="_userName" maxlength="50" class="score-input" />
+    </div>
+    <div class="form-group">
+        <label>
+            <input type="checkbox" @bind="_includeEmail" /> Include email
+        </label>
+    </div>
+    @if (_includeEmail)
+    {
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" @bind="_emailAddress" maxlength="100" class="score-input" />
+        </div>
+    }
+    <div class="form-actions">
+        <button class="toolbar-btn" @onclick="Submit" disabled="@(string.IsNullOrWhiteSpace(_userName))">Submit</button>
+        <button class="toolbar-btn" @onclick="OnCancel">Cancel</button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Score { get; set; }
+    [Parameter] public EventCallback OnSubmitted { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private string _userName = string.Empty;
+    private bool _includeEmail;
+    private string _emailAddress = string.Empty;
+
+    private async Task Submit()
+    {
+        var request = new SubmitScoreRequest
+        {
+            UserName = _userName,
+            ScoreValue = Score,
+            EmailAddress = _includeEmail ? _emailAddress : null
+        };
+
+        await ScoreService.SaveScoreAsync(request);
+        await OnSubmitted.InvokeAsync();
+    }
+}

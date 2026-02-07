@@ -1,0 +1,132 @@
+@page "/"
+@inject IScoreService ScoreService
+
+<div class="game-container">
+    <h1 class="game-title">agTetribricks</h1>
+
+    <ScoreBar PreviewPoints="_previewPoints" Score="_controller.TotalScore" />
+    <Toolbar CanUndo="_controller.CanUndo"
+             CanRedo="_controller.CanRedo"
+             OnUndo="HandleUndo"
+             OnRedo="HandleRedo"
+             OnNewGame="HandleNewGame"
+             OnToggleHighScores="ToggleHighScores" />
+
+    <div class="board-container">
+        <GameBoard Game="_controller.CurrentGame"
+                   OnBrickClick="HandleBrickClick"
+                   OnPreviewPoints="HandlePreviewPoints" />
+
+        @if (_showHighScores)
+        {
+            <HighScoresPanel OnClose="ToggleHighScores" />
+        }
+
+        @if (_showSubmitForm)
+        {
+            <SubmitScoreForm Score="_controller.TotalScore"
+                             OnSubmitted="HandleScoreSubmitted"
+                             OnCancel="HandleSubmitCancel" />
+        }
+
+        @if (_isGameOver && !_showSubmitForm)
+        {
+            <div class="overlay-panel game-over-panel">
+                <h3>Game Over!</h3>
+                <p>Final Score: <strong>@_controller.TotalScore</strong></p>
+                <button class="toolbar-btn" @onclick="HandleNewGame">New Game</button>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private TetriBricksGameController _controller = new();
+    private int _previewPoints;
+    private bool _showHighScores;
+    private bool _showSubmitForm;
+    private bool _isGameOver;
+    private int _lowestTopScore;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLowestTopScore();
+    }
+
+    private async Task LoadLowestTopScore()
+    {
+        try
+        {
+            var scores = await ScoreService.GetTopScoresAsync();
+            _lowestTopScore = scores.Count >= 20 ? scores.Min(s => s.ScoreValue) : 0;
+        }
+        catch
+        {
+            _lowestTopScore = 0;
+        }
+    }
+
+    private void HandleBrickClick(Brick brick)
+    {
+        if (_isGameOver) return;
+
+        _controller.RemoveBrick(brick);
+        _previewPoints = 0;
+
+        if (_controller.CurrentGame.IsGameOver)
+        {
+            _isGameOver = true;
+            if (_controller.TotalScore > _lowestTopScore)
+            {
+                _showSubmitForm = true;
+            }
+        }
+    }
+
+    private void HandlePreviewPoints(int points)
+    {
+        _previewPoints = points;
+    }
+
+    private void HandleUndo()
+    {
+        _controller.Previous();
+        _isGameOver = false;
+        _showSubmitForm = false;
+    }
+
+    private void HandleRedo()
+    {
+        _controller.Next();
+        if (_controller.CurrentGame.IsGameOver)
+        {
+            _isGameOver = true;
+        }
+    }
+
+    private async Task HandleNewGame()
+    {
+        _controller.CreateNewGame();
+        _previewPoints = 0;
+        _isGameOver = false;
+        _showSubmitForm = false;
+        _showHighScores = false;
+        await LoadLowestTopScore();
+    }
+
+    private void ToggleHighScores()
+    {
+        _showHighScores = !_showHighScores;
+    }
+
+    private async Task HandleScoreSubmitted()
+    {
+        _showSubmitForm = false;
+        await LoadLowestTopScore();
+    }
+
+    private void HandleSubmitCancel()
+    {
+        _showSubmitForm = false;
+    }
+}
