@@ -7,6 +7,7 @@
                 <BrickCell Brick="brick"
                            Color="brick.Color"
                            IsHighlighted="_highlightedBricks.Contains(brick)"
+                           HighlightBorderCss="@GetBorderCss(brick)"
                            OnBrickHover="HandleBrickHover"
                            OnBrickClick="HandleBrickClick" />
             }
@@ -60,6 +61,26 @@
 
         _highlightedBricks.Clear();
         await OnBrickClick.InvokeAsync(brick);
+    }
+
+    private string GetBorderCss(Brick brick)
+    {
+        if (!_highlightedBricks.Contains(brick))
+            return "";
+
+        var css = "";
+
+        // column-reverse: row+1 is visually up, row-1 is visually down
+        if (!_highlightedBricks.Any(b => b.Column == brick.Column && b.Row == brick.Row + 1))
+            css += "hl-border-top ";
+        if (!_highlightedBricks.Any(b => b.Column == brick.Column && b.Row == brick.Row - 1))
+            css += "hl-border-bottom ";
+        if (!_highlightedBricks.Any(b => b.Row == brick.Row && b.Column == brick.Column - 1))
+            css += "hl-border-left ";
+        if (!_highlightedBricks.Any(b => b.Row == brick.Row && b.Column == brick.Column + 1))
+            css += "hl-border-right ";
+
+        return css.TrimEnd();
     }
 
     private async Task HandleTouchTap(Brick brick)
