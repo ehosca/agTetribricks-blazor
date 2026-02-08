@@ -1,5 +1,7 @@
 @page "/"
 @inject IScoreService ScoreService
+@inject ViewportService ViewportService
+@implements IDisposable
 
 <div class="game-container">
     <h1 class="game-title">agTetribricks</h1>
@@ -14,6 +16,8 @@
 
     <div class="board-container">
         <GameBoard Game="_controller.CurrentGame"
+                   TileSize="_gridDimensions.TileSize"
+                   IsTouchDevice="_isTouchDevice"
                    OnBrickClick="HandleBrickClick"
                    OnPreviewPoints="HandlePreviewPoints" />
 
@@ -42,6 +46,8 @@
 
 @code {
     private TetriBricksGameController _controller = new();
+    private GridDimensions _gridDimensions = new(15, 15, 20);
+    private bool _isTouchDevice;
     private int _previewPoints;
     private bool _showHighScores;
     private bool _showSubmitForm;
@@ -50,7 +56,40 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await ViewportService.InitializeAsync();
+        _isTouchDevice = ViewportService.Current.IsTouchDevice;
+
+        _gridDimensions = GridCalculator.Calculate(
+            ViewportService.Current.Width,
+            ViewportService.Current.Height,
+            _isTouchDevice);
+
+        _controller = new TetriBricksGameController(_gridDimensions.Rows, _gridDimensions.Columns);
+
+        ViewportService.ViewportChanged += OnViewportChanged;
+
         await LoadLowestTopScore();
+    }
+
+    private void OnViewportChanged(ViewportInfo info)
+    {
+        var newDimensions = GridCalculator.Calculate(info.Width, info.Height, info.IsTouchDevice);
+        _isTouchDevice = info.IsTouchDevice;
+
+        if (newDimensions.Rows != _gridDimensions.Rows || newDimensions.Columns != _gridDimensions.Columns)
+        {
+            _gridDimensions = newDimensions;
+            _controller = new TetriBricksGameController(_gridDimensions.Rows, _gridDimensions.Columns);
+            _previewPoints = 0;
+            _isGameOver = false;
+            _showSubmitForm = false;
+        }
+        else if (newDimensions.TileSize != _gridDimensions.TileSize)
+        {
+            _gridDimensions = newDimensions;
+        }
+
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task LoadLowestTopScore()
@@ -106,7 +145,7 @@
 
     private async Task HandleNewGame()
     {
-        _controller.CreateNewGame();
+        _controller.CreateNewGame(_gridDimensions.Rows, _gridDimensions.Columns);
         _previewPoints = 0;
         _isGameOver = false;
         _showSubmitForm = false;
@@ -128,5 +167,10 @@
     private void HandleSubmitCancel()
     {
         _showSubmitForm = false;
+    }
+
+    public void Dispose()
+    {
+        ViewportService.ViewportChanged -= OnViewportChanged;
     }
 }

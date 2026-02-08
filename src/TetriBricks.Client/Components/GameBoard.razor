@@ -1,4 +1,4 @@
-<div class="game-board" @onmouseleave="ClearHighlight">
+<div class="game-board" style="--tile-size: @(TileSize)px" @onmouseleave="ClearHighlight">
     @foreach (var column in Game.Columns)
     {
         <div class="brick-column">
@@ -16,13 +16,18 @@
 
 @code {
     [Parameter] public TetriBricksGame Game { get; set; } = default!;
+    [Parameter] public int TileSize { get; set; } = 20;
+    [Parameter] public bool IsTouchDevice { get; set; }
     [Parameter] public EventCallback<Brick> OnBrickClick { get; set; }
     [Parameter] public EventCallback<int> OnPreviewPoints { get; set; }
 
     private HashSet<Brick> _highlightedBricks = new();
+    private Brick? _selectedBrick;
 
     private async Task HandleBrickHover(Brick brick)
     {
+        if (IsTouchDevice) return;
+
         _highlightedBricks.Clear();
         var adjacent = Game.GetAdjacentBricks(brick);
         if (adjacent.Count > 1)
@@ -39,13 +44,52 @@
 
     private void ClearHighlight()
     {
+        if (IsTouchDevice) return;
+
         _highlightedBricks.Clear();
         OnPreviewPoints.InvokeAsync(0);
     }
 
     private async Task HandleBrickClick(Brick brick)
     {
+        if (IsTouchDevice)
+        {
+            await HandleTouchTap(brick);
+            return;
+        }
+
         _highlightedBricks.Clear();
         await OnBrickClick.InvokeAsync(brick);
+    }
+
+    private async Task HandleTouchTap(Brick brick)
+    {
+        var adjacent = Game.GetAdjacentBricks(brick);
+
+        if (adjacent.Count <= 1)
+        {
+            // Lone brick - clear selection
+            _highlightedBricks.Clear();
+            _selectedBrick = null;
+            await OnPreviewPoints.InvokeAsync(0);
+            return;
+        }
+
+        if (_selectedBrick is not null && _highlightedBricks.Contains(brick))
+        {
+            // Second tap on highlighted group - confirm removal
+            _highlightedBricks.Clear();
+            _selectedBrick = null;
+            await OnPreviewPoints.InvokeAsync(0);
+            await OnBrickClick.InvokeAsync(brick);
+            return;
+        }
+
+        // First tap or tap on different group - highlight
+        _highlightedBricks.Clear();
+        foreach (var b in adjacent)
+            _highlightedBricks.Add(b);
+        _selectedBrick = brick;
+        await OnPreviewPoints.InvokeAsync((int)Math.Pow(adjacent.Count, 2));
     }
 }

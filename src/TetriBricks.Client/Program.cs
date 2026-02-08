@@ -13,5 +13,6 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<ApiScoreService>();
 builder.Services.AddScoped<LocalScoreService>();
 builder.Services.AddScoped<IScoreService, CompositeScoreService>();
+builder.Services.AddScoped<ViewportService>();
 
 await builder.Build().RunAsync();
