@@ -37,6 +37,7 @@ public class TetriBricksGameController
         _moveHistory.Clear();
 
         var game = new TetriBricksGame();
+        game.TotalColumns = columns;
 
         for (int i = 0; i < columns; i++)
         {

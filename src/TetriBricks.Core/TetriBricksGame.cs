@@ -22,6 +22,8 @@ public class TetriBricksGame
         }
     }
 
+    public int TotalColumns { get; set; }
+
     public int Score { get; set; }
 
     public bool IsGameOver
@@ -85,6 +87,10 @@ public class TetriBricksGame
                 b.Column = Columns.IndexOf(bc);
                 b.Row = bc.Bricks.IndexOf(b);
             });
+
+        // Pad with empty columns to maintain fixed grid width
+        while (Columns.Count < TotalColumns)
+            Columns.Add(new BrickColumn());
     }
 
     public TetriBricksGame Clone()
@@ -101,6 +107,7 @@ public class TetriBricksGame
             clone.Columns.Add(bcClone);
         }
 
+        clone.TotalColumns = TotalColumns;
         return clone;
     }
 
