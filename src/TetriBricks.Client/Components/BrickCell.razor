@@ -1,4 +1,5 @@
-<div class="brick-cell brick-@Color.ToString().ToLower() @(IsHighlighted ? "highlighted" : "") @HighlightBorderCss"
+<div class="brick-cell brick-@Color.ToString().ToLower() @(IsHighlighted ? "highlighted" : "") @(IsRemoving ? "removing" : "") @HighlightBorderCss"
+     style="@PositionStyle"
      @onmouseenter="OnMouseEnter"
      @onclick="OnClick">
 </div>
@@ -7,6 +8,8 @@
     [Parameter] public Brick Brick { get; set; } = default!;
     [Parameter] public BrickColor Color { get; set; }
     [Parameter] public bool IsHighlighted { get; set; }
+    [Parameter] public bool IsRemoving { get; set; }
+    [Parameter] public string PositionStyle { get; set; } = "";
     [Parameter] public string HighlightBorderCss { get; set; } = "";
     [Parameter] public EventCallback<Brick> OnBrickHover { get; set; }
     [Parameter] public EventCallback<Brick> OnBrickClick { get; set; }

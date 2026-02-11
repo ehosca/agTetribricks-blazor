@@ -1,33 +1,61 @@
-<div class="game-board" style="--tile-size: @(TileSize)px" @onmouseleave="ClearHighlight">
-    @foreach (var column in Game.Columns)
+<div class="game-board"
+     style="--tile-size: @(TileSize)px; width: @(Game.TotalColumns * TileSize)px; height: @(Rows * TileSize)px"
+     @onmouseleave="ClearHighlight">
+    @foreach (var brick in GetAllBricks())
     {
-        <div class="brick-column">
-            @foreach (var brick in column.Bricks)
-            {
-                <BrickCell Brick="brick"
-                           Color="brick.Color"
-                           IsHighlighted="_highlightedBricks.Contains(brick)"
-                           HighlightBorderCss="@GetBorderCss(brick)"
-                           OnBrickHover="HandleBrickHover"
-                           OnBrickClick="HandleBrickClick" />
-            }
-        </div>
+        <BrickCell @key="brick.Id"
+                   Brick="brick"
+                   Color="brick.Color"
+                   IsHighlighted="_highlightedBricks.Contains(brick)"
+                   IsRemoving="_removingBrickIds.Contains(brick.Id)"
+                   PositionStyle="@GetPositionStyle(brick)"
+                   HighlightBorderCss="@GetBorderCss(brick)"
+                   OnBrickHover="HandleBrickHover"
+                   OnBrickClick="HandleBrickClick" />
     }
 </div>
 
 @code {
     [Parameter] public TetriBricksGame Game { get; set; } = default!;
     [Parameter] public int TileSize { get; set; } = 20;
+    [Parameter] public int Rows { get; set; }
     [Parameter] public bool IsTouchDevice { get; set; }
     [Parameter] public EventCallback<Brick> OnBrickClick { get; set; }
     [Parameter] public EventCallback<int> OnPreviewPoints { get; set; }
 
     private HashSet<Brick> _highlightedBricks = new();
+    private HashSet<int> _removingBrickIds = new();
     private Brick? _selectedBrick;
+    private bool _isAnimating;
+
+    private IEnumerable<Brick> GetAllBricks()
+    {
+        // Include removing bricks (from snapshot) plus current game bricks
+        var currentBricks = Game.Bricks;
+        if (_removingBrickIds.Count > 0)
+        {
+            // During removal phase, _removingSnapshot has the bricks being removed
+            // and current game bricks are the ones that remain
+            foreach (var brick in _removingSnapshot)
+                yield return brick;
+        }
+        foreach (var brick in currentBricks)
+        {
+            if (!_removingBrickIds.Contains(brick.Id))
+                yield return brick;
+        }
+    }
+
+    private List<Brick> _removingSnapshot = new();
+
+    private string GetPositionStyle(Brick brick)
+    {
+        return $"left:{brick.Column * TileSize}px;bottom:{brick.Row * TileSize}px";
+    }
 
     private async Task HandleBrickHover(Brick brick)
     {
-        if (IsTouchDevice) return;
+        if (IsTouchDevice || _isAnimating) return;
 
         _highlightedBricks.Clear();
         var adjacent = Game.GetAdjacentBricks(brick);
@@ -45,7 +73,7 @@
 
     private void ClearHighlight()
     {
-        if (IsTouchDevice) return;
+        if (IsTouchDevice || _isAnimating) return;
 
         _highlightedBricks.Clear();
         OnPreviewPoints.InvokeAsync(0);
@@ -53,14 +81,44 @@
 
     private async Task HandleBrickClick(Brick brick)
     {
+        if (_isAnimating) return;
+
         if (IsTouchDevice)
         {
             await HandleTouchTap(brick);
             return;
         }
 
+        await AnimateAndRemove(brick);
+    }
+
+    private async Task AnimateAndRemove(Brick brick)
+    {
+        var adjacent = Game.GetAdjacentBricks(brick);
+        if (adjacent.Count <= 1) return;
+
+        _isAnimating = true;
+
+        // Phase 1: Shrink & fade out removed bricks
+        _removingSnapshot = adjacent.ToList();
+        _removingBrickIds = new HashSet<int>(adjacent.Select(b => b.Id));
         _highlightedBricks.Clear();
+        _selectedBrick = null;
+        await OnPreviewPoints.InvokeAsync(0);
+        StateHasChanged();
+
+        await Task.Delay(300);
+
+        // Phase 2: Clear removing state, trigger actual removal (game state update)
+        _removingBrickIds.Clear();
+        _removingSnapshot.Clear();
         await OnBrickClick.InvokeAsync(brick);
+        StateHasChanged();
+
+        // Wait for slide transition
+        await Task.Delay(300);
+
+        _isAnimating = false;
     }
 
     private string GetBorderCss(Brick brick)
@@ -70,7 +128,7 @@
 
         var css = "";
 
-        // column-reverse: row+1 is visually up, row-1 is visually down
+        // row+1 is visually up, row-1 is visually down (bottom-based positioning)
         if (!_highlightedBricks.Any(b => b.Column == brick.Column && b.Row == brick.Row + 1))
             css += "hl-border-top ";
         if (!_highlightedBricks.Any(b => b.Column == brick.Column && b.Row == brick.Row - 1))
@@ -85,6 +143,8 @@
 
     private async Task HandleTouchTap(Brick brick)
     {
+        if (_isAnimating) return;
+
         var adjacent = Game.GetAdjacentBricks(brick);
 
         if (adjacent.Count <= 1)
@@ -98,11 +158,8 @@
 
         if (_selectedBrick is not null && _highlightedBricks.Contains(brick))
         {
-            // Second tap on highlighted group - confirm removal
-            _highlightedBricks.Clear();
-            _selectedBrick = null;
-            await OnPreviewPoints.InvokeAsync(0);
-            await OnBrickClick.InvokeAsync(brick);
+            // Second tap on highlighted group - confirm removal with animation
+            await AnimateAndRemove(brick);
             return;
         }
 

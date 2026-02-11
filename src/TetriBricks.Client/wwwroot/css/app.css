@@ -97,25 +97,28 @@ h1:focus {
 }
 
 .game-board {
-    display: flex;
-    flex-direction: row;
-}
-
-.brick-column {
-    display: flex;
-    flex-direction: column-reverse;
-    min-width: var(--tile-size);
+    position: relative;
 }
 
 /* === Brick Cell === */
 .brick-cell {
+    position: absolute;
     width: var(--tile-size);
     height: var(--tile-size);
     opacity: 0.8;
     cursor: pointer;
     box-sizing: border-box;
     border: 1px solid rgba(0, 0, 0, 0.2);
-    transition: opacity 0.1s ease;
+    transition: left 0.3s ease, bottom 0.3s ease, opacity 0.1s ease;
+}
+
+.brick-cell.removing {
+    animation: brick-remove 0.3s ease forwards;
+}
+
+@keyframes brick-remove {
+    0%   { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(0); opacity: 0; }
 }
 
 .brick-cell.highlighted {

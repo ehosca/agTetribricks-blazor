@@ -101,7 +101,7 @@ public class TetriBricksGame
             var bcClone = new BrickColumn();
             foreach (Brick b in bc.Bricks)
             {
-                var bClone = new Brick(b.Row, b.Column, b.Color);
+                var bClone = new Brick { Id = b.Id, Row = b.Row, Column = b.Column, Color = b.Color };
                 bcClone.Bricks.Add(bClone);
             }
             clone.Columns.Add(bcClone);
