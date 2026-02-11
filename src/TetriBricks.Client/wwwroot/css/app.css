@@ -123,10 +123,19 @@ h1:focus {
     filter: brightness(1.3);
 }
 
-.brick-cell.hl-border-top    { border-top:    2px solid rgba(255,255,255,0.8); }
-.brick-cell.hl-border-bottom { border-bottom: 2px solid rgba(255,255,255,0.8); }
-.brick-cell.hl-border-left   { border-left:   2px solid rgba(255,255,255,0.8); }
-.brick-cell.hl-border-right  { border-right:  2px solid rgba(255,255,255,0.8); }
+.brick-cell.hl-border-top    { border-top:    2px solid rgba(255,255,255,0.9); }
+.brick-cell.hl-border-bottom { border-bottom: 2px solid rgba(255,255,255,0.9); }
+.brick-cell.hl-border-left   { border-left:   2px solid rgba(255,255,255,0.9); }
+.brick-cell.hl-border-right  { border-right:  2px solid rgba(255,255,255,0.9); }
+
+.brick-cell.highlighted {
+    animation: glow-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 3px 1px rgba(255,255,255,0.3); }
+    50%      { box-shadow: 0 0 8px 3px rgba(255,255,255,0.7); }
+}
 
 .brick-red { background-color: #e74c3c; }
 .brick-blue { background-color: #3498db; }
