@@ -16,7 +16,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseBlazorFrameworkFiles();
-app.UseStaticFiles();
+app.MapStaticAssets();
 
 app.MapGet("/api/scores", async (AppDbContext db) =>
 {
