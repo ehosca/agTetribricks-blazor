@@ -9,6 +9,21 @@ public static class GridCalculator
     private const int MaxRows = 20;
     private const int MaxColumns = 24;
 
+    public static int CalculateTileSize(int viewportWidth, int viewportHeight, bool isTouchDevice, int rows, int columns)
+    {
+        int minTile = isTouchDevice ? 34 : 28;
+        int maxTile = isTouchDevice ? 44 : 46;
+
+        int availableHeight = Math.Max(viewportHeight - ChromeHeight, 100);
+        int availableWidth = Math.Max(viewportWidth - 16, 100);
+
+        int maxByWidth = availableWidth / columns;
+        int maxByHeight = availableHeight / rows;
+        int tileSize = Math.Min(maxByWidth, maxByHeight);
+
+        return Math.Clamp(tileSize, minTile, maxTile);
+    }
+
     public static GridDimensions Calculate(int viewportWidth, int viewportHeight, bool isTouchDevice)
     {
         int minTile = isTouchDevice ? 34 : 28;

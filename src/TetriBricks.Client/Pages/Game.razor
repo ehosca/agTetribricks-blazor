@@ -73,23 +73,18 @@
 
     private void OnViewportChanged(ViewportInfo info)
     {
-        var newDimensions = GridCalculator.Calculate(info.Width, info.Height, info.IsTouchDevice);
         _isTouchDevice = info.IsTouchDevice;
 
-        if (newDimensions.Rows != _gridDimensions.Rows || newDimensions.Columns != _gridDimensions.Columns)
-        {
-            _gridDimensions = newDimensions;
-            _controller = new TetriBricksGameController(_gridDimensions.Rows, _gridDimensions.Columns);
-            _previewPoints = 0;
-            _isGameOver = false;
-            _showSubmitForm = false;
-        }
-        else if (newDimensions.TileSize != _gridDimensions.TileSize)
-        {
-            _gridDimensions = newDimensions;
-        }
+        // Keep existing grid dimensions (rows/columns), only recalculate tile size
+        int tileSize = GridCalculator.CalculateTileSize(
+            info.Width, info.Height, info.IsTouchDevice,
+            _gridDimensions.Rows, _gridDimensions.Columns);
 
-        InvokeAsync(StateHasChanged);
+        if (tileSize != _gridDimensions.TileSize)
+        {
+            _gridDimensions = _gridDimensions with { TileSize = tileSize };
+            InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task LoadLowestTopScore()
