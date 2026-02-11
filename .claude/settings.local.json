@@ -7,7 +7,15 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(netstat -ano)",
+      "Bash(findstr :5104)",
+      "Bash(dir /b srcTetriBricks.ClientbinDebugnet10.0wwwroot_frameworkblazor.webassembly*)",
+      "Bash(timeout:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet workload install:*)",
+      "Bash(dotnet publish:*)",
+      "Bash(powershell:*)"
     ]
   }
 }
